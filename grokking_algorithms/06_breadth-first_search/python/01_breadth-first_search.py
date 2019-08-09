@@ -1,7 +1,12 @@
+#! /usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 from collections import deque
 
+# Функция проверки, что данный персонаж является продавцом
 def person_is_seller(name):
-      return name[-1] == 'm'
+    # Просто проверяем, что его имя заканчивается на m
+    return name[-1] == 'm'
 
 graph = {}
 graph["you"] = ["alice", "bob", "claire"]
