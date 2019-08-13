@@ -9,69 +9,104 @@ import (
 	"math"
 )
 
+// Структура данных хэш-таблицы
 type HashTable struct {
-	Table    map[int]*list.List
+	Table    []*list.List
 	Size     int
 	Capacity int
 }
 
+// Внутренний итем таблицы
 type item struct {
 	key   string
 	value interface{}
 }
 
+// Создание новой хэш-таблицы
 func New(cap int) *HashTable {
-	table := make(map[int]*list.List, cap)
-	return &HashTable{Table: table, Size: 0, Capacity: cap}
+	// Создаем внутренний массив
+	internalArray := make([]*list.List, cap)
+	// Создаем непосредственно сам объект
+	newTable := HashTable{
+		Table: internalArray, 
+		Size: 0, 
+		Capacity: cap
+	}
+	return &newTable
 }
 
+// Метод получения итема из таблицы
 func (ht *HashTable) Get(key string) (interface{}, error) {
+	// Получаем индекс в массиве
 	index := ht.position(key)
+	// Получаем конкретный этэм из массива с нужным ключем
 	item, err := ht.find(index, key)
 
+	// Не нашли итем - возвращаем ошибку
 	if item == nil {
 		return "", errors.New("Not Found")
 	}
 
+	// Созвращаем итем и ошибку поиска, если есть
 	return item.value, err
 }
 
+// Метод помещения объекта в таблицу
 func (ht *HashTable) Put(key, value string) {
+	// Вычисляем потенциальный индекс в таблице
 	index := ht.position(key)
 
+	// Проверяем, есть ли в массиве уже список по нужному нам индексу
 	if ht.Table[index] == nil {
+		// Если еще нету списка, то создаем его
 		ht.Table[index] = list.NewList()
 	}
 
-	item := &item{key: key, value: value}
-
-	a, err := ht.find(index, key)
+	// Получаем итем под ключем, в котором хранится значение
+	currentItem, err := ht.find(index, key)
 	if err != nil {
-		// The key doesn't exist in HashTable
-		ht.Table[index].Append(item)
+		// Создаем внутренний итем
+		newitem := &item{
+			key: key, 
+			value: value
+		}
+
+		// Добавляем новый итем к таблице
+		ht.Table[index].Append(newitem)
 		ht.Size++
 	} else {
-		// The key exists so we overwrite its value
-		a.value = value
+		// Значение под данным ключем уже существует, поэтому просто обновляем значение
+		currentItem.value = value
 	}
 }
 
 func (ht *HashTable) Del(key string) error {
+	// Получаем индекс в массиве
 	index := ht.position(key)
-	l := ht.Table[index]
-	var val *item
 
+	// Получаем список из таблицы, везвращаем ошибку если нету
+	l, err := ht.Table[index]
+	if err != nil {
+		return err
+	}
+
+	// Перебираем все итемы в списке и ищем с нужным ключем
+	var val *item
 	l.Each(func(node list.Node) {
 		if node.Value.(*item).key == key {
 			val = node.Value.(*item)
 		}
 	})
 
+	// Нашли или нет?
 	if val == nil {
 		return nil
 	}
 
+	// Уменьшаем количество элеметов
 	ht.Size--
+
+	// Удаляем из списка элемент
 	return l.Remove(val)
 }
 
@@ -87,6 +122,7 @@ func (ht *HashTable) ForEach(f func(*item)) {
 
 // Вычисляем позицию в массиве по строке
 func (ht *HashTable) position(s string) int {
+	// Получаем индекс в массиве как хэш % размер_массива
 	return hashCode(s) % ht.Capacity
 }
 
