@@ -2,11 +2,13 @@ package bst
 
 import ()
 
+// Узел дерева
 type Node struct {
-	Value  int
-	Parent *Node
-	Left   *Node
-	Right  *Node
+	Key  int   	    // Ключ
+	Value  int   	// Переменная
+	Parent *Node    // Родитель
+	Left   *Node    // Левый ребенок
+	Right  *Node    // Правый ребенок
 }
 
 func NewNode(i int) *Node {
@@ -14,6 +16,7 @@ func NewNode(i int) *Node {
 }
 
 func (n *Node) Compare(m *Node) int {
+	// Сравниваем с текущим, меньше или больше параметр нод по значению 
 	if n.Value < m.Value {
 		return -1
 	} else if n.Value > m.Value {
@@ -23,11 +26,15 @@ func (n *Node) Compare(m *Node) int {
 	}
 }
 
+/////////////////////////////////////////////////////////////////
+
+// Описание дерева
 type Tree struct {
-	Head *Node
-	Size int
+	Head *Node     // Верхушка данного поддерева
+	Size int       // Размер дерева
 }
 
+// Создаем новое дерево с узлом-верхушкой 
 func NewTree(n *Node) *Tree {
 	if n == nil {
 		return &Tree{}
@@ -35,50 +42,68 @@ func NewTree(n *Node) *Tree {
 	return &Tree{Head: n, Size: 1}
 }
 
-func (t *Tree) Insert(i int) {
-	n := &Node{Value: i}
+// Добавляем новый элемент в дерево
+func (t *Tree) Insert(key, val int) {
+	// Создаем новый узел
+	n := &Node{Key: key, Value: val}
+
+	// Если у текущего дерева нету еще верхушки, значит новый нод и есть верхушка
+	// дальше нет смысла делать что-то
 	if t.Head == nil {
 		t.Head = n
 		t.Size++
 		return
 	}
 
-	h := t.Head
+	// Иначе берем верхушку дерева
+	curNode := t.Head
 
+	// И ищем, куда бы впихнуть новый нод
 	for {
-		if n.Compare(h) == -1 {
-			if h.Left == nil {
-				h.Left = n
-				n.Parent = h
+		// Если новый нод меньше текущей верхушки
+		if n.Compare(curNode) == -1 {
+			// и если у текущего проверяемого нода нету левого чилда, значит новый нод будет тем самым чилдом
+			if curNode.Left == nil {
+				curNode.Left = n
+				n.Parent = curNode
 				break
 			} else {
-				h = h.Left
+				// если у текущего года есть левый ребенок, 
+				// то делаем новую итерацию и проверяем уже его
+				curNode = curNode.Left
 			}
 		} else {
-			if h.Right == nil {
-				h.Right = n
-				n.Parent = h
+			// Если нет правого нода, то добавляем новый нод в качестве правого нода
+			if curNode.Right == nil {
+				curNode.Right = n
+				n.Parent = curNode
 				break
 			} else {
-				h = h.Right
+				// Если правый нод есть, то продолжаем итерироваться дальше
+				curNode = curNode.Right
 			}
 		}
 	}
 	t.Size++
 }
 
-func (t *Tree) Search(i int) *Node {
-	h := t.Head
-	n := &Node{Value: i}
+// Ищем конкретный нод для значения
+func (t *Tree) Search(key int) int {
+	// Берем верхушку дерева
+	curNode := t.Head
+	// Создаем временный нод
+	tempNode := &Node{Key: key}
 
-	for h != nil {
-		switch h.Compare(n) {
+	for curNode != nil {
+		// Сравниваем значение тестируемого нода, 
+		// чтобы определить куда идти, затем обходим ноды
+		switch curNode.Compare(tempNode) {
 		case -1:
-			h = h.Right
+			curNode = curNode.Right
 		case 1:
-			h = h.Left
+			curNode = curNode.Left
 		case 0:
-			return h
+			return curNode.Value
 		default:
 			panic("Node not found")
 		}
@@ -88,11 +113,11 @@ func (t *Tree) Search(i int) *Node {
 
 // returns true if a node with value i was found
 // and deleted and returns false otherwise
-func (t *Tree) Delete(i int) bool {
+func (t *Tree) Delete(key int) bool {
 	var parent *Node
 
 	h := t.Head
-	n := &Node{Value: i}
+	n := &Node{Key: key}
 	for h != nil {
 		switch n.Compare(h) {
 		case -1:

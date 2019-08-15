@@ -30,7 +30,7 @@ func New(cap int) *HashTable {
 	newTable := HashTable{
 		Table: internalArray, 
 		Size: 0, 
-		Capacity: cap
+		Capacity: cap,
 	}
 	return &newTable
 }
@@ -68,7 +68,7 @@ func (ht *HashTable) Put(key, value string) {
 		// Создаем внутренний итем
 		newitem := &item{
 			key: key, 
-			value: value
+			value: value,
 		}
 
 		// Добавляем новый итем к таблице
@@ -85,9 +85,9 @@ func (ht *HashTable) Del(key string) error {
 	index := ht.position(key)
 
 	// Получаем список из таблицы, везвращаем ошибку если нету
-	l, err := ht.Table[index]
-	if err != nil {
-		return err
+	l := ht.Table[index]
+	if l == nil {
+		return errors.New("Not Found")
 	}
 
 	// Перебираем все итемы в списке и ищем с нужным ключем
