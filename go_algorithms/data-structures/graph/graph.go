@@ -5,28 +5,32 @@ import (
 )
 
 type VertexId uint
-
 type Vertices []VertexId
 
+// Описание структуры ребра
 type Edge struct {
 	From VertexId
 	To   VertexId
 }
 
-type graph struct {
-	edges      map[VertexId]map[VertexId]int
-	edgesCount int
-	isDirected bool
-}
-
+// Описание интерфейса итерирования по ребрам
 type EdgesIterable interface {
 	EdgesIter() <-chan Edge
 }
 
+// Описание интерфейса итерирования по вершинам
 type VerticesIterable interface {
 	VerticesIter() <-chan VertexId
 }
 
+// Описание структуры графа
+type graph struct {
+	edges      map[VertexId](map[VertexId]int) // Описываем ребра
+	edgesCount int 			// Количество ребер
+	isDirected bool 		// Направленый ли граф
+}
+
+// Итерирование по граням
 func (g *graph) EdgesIter() <-chan Edge {
 	ch := make(chan Edge)
 	go func() {
@@ -46,6 +50,7 @@ func (g *graph) EdgesIter() <-chan Edge {
 	return ch
 }
 
+// Итерирование по вершинам
 func (g *graph) VerticesIter() <-chan VertexId {
 	ch := make(chan VertexId)
 	go func() {

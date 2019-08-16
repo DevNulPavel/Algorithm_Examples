@@ -4,22 +4,26 @@ import (
 	"sync"
 )
 
+// Описание интерфейса конкретного итема
 type Item interface {
 	Less(than Item) bool
 }
 
+// Структура данных куча
 type Heap struct {
 	sync.Mutex
 	data []Item
 	min  bool
 }
 
+// Создание новой кучи
 func New() *Heap {
 	return &Heap{
 		data: make([]Item, 0),
 	}
 }
 
+// Новая минимальная куча
 func NewMin() *Heap {
 	return &Heap{
 		data: make([]Item, 0),
@@ -27,6 +31,7 @@ func NewMin() *Heap {
 	}
 }
 
+// Новая куча максимум
 func NewMax() *Heap {
 	return &Heap{
 		data: make([]Item, 0),
