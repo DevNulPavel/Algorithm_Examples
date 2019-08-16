@@ -11,15 +11,15 @@ type Node struct {
 	Right  *Node    // Правый ребенок
 }
 
-func NewNode(i int) *Node {
-	return &Node{Value: i}
+func NewNode(key, val int) *Node {
+	return &Node{Key: key, Value: val}
 }
 
 func (n *Node) Compare(m *Node) int {
 	// Сравниваем с текущим, меньше или больше параметр нод по значению 
-	if n.Value < m.Value {
+	if n.Key < m.Key {
 		return -1
-	} else if n.Value > m.Value {
+	} else if n.Key > m.Key {
 		return 1
 	} else {
 		return 0
@@ -67,17 +67,23 @@ func (t *Tree) Insert(key, val int) {
 				curNode.Left = n
 				n.Parent = curNode
 				break
+			} else if curNode.Left.Key == key {
+				// TODO: Здесь требуется доработка, если ключи совпадают - перезаписываем
+				curNode.Left.Value = val;
 			} else {
 				// если у текущего года есть левый ребенок, 
 				// то делаем новую итерацию и проверяем уже его
 				curNode = curNode.Left
 			}
-		} else {
+		}  else {
 			// Если нет правого нода, то добавляем новый нод в качестве правого нода
 			if curNode.Right == nil {
 				curNode.Right = n
 				n.Parent = curNode
 				break
+			} else if curNode.Right.Key == key {
+				// TODO: Здесь требуется доработка, если ключи совпадают - перезаписываем
+				curNode.Right.Value = val;
 			} else {
 				// Если правый нод есть, то продолжаем итерироваться дальше
 				curNode = curNode.Right
@@ -88,7 +94,7 @@ func (t *Tree) Insert(key, val int) {
 }
 
 // Ищем конкретный нод для значения
-func (t *Tree) Search(key int) int {
+func (t *Tree) Search(key int) *Node {
 	// Берем верхушку дерева
 	curNode := t.Head
 	// Создаем временный нод
@@ -103,7 +109,7 @@ func (t *Tree) Search(key int) int {
 		case 1:
 			curNode = curNode.Left
 		case 0:
-			return curNode.Value
+			return curNode
 		default:
 			panic("Node not found")
 		}
@@ -116,48 +122,76 @@ func (t *Tree) Search(key int) int {
 func (t *Tree) Delete(key int) bool {
 	var parent *Node
 
-	h := t.Head
-	n := &Node{Key: key}
-	for h != nil {
-		switch n.Compare(h) {
-		case -1:
-			parent = h
-			h = h.Left
-		case 1:
-			parent = h
-			h = h.Right
-		case 0:
-			if h.Left != nil {
-				right := h.Right
-				h.Value = h.Left.Value
-				h.Left = h.Left.Left
-				h.Right = h.Left.Right
+	// Начинаем поиск с вершины дерева
+	curNode := t.Head
 
+	// Создаем временный нод для поиска
+	n := &Node{Key: key}
+
+	// Выполняем поиск по дереву
+	for curNode != nil {
+		// Сравниваем тестовый нод с текущим и определяем в какую сторону надо идти
+		switch n.Compare(curNode) {
+		case -1:
+			// Если тестовый нод меньше, идем налево,
+			// выбираем в качестве родителя текущий нод, 
+			// а в качестве нового тестируемого - текущую ветку
+			parent = curNode
+			curNode = curNode.Left
+		case 1:
+			// Если тестовый нод больше, идем налево,
+			// выбираем в качестве родителя текущий нод, 
+			// а в качестве нового тестируемого - текущую ветку
+			parent = curNode
+			curNode = curNode.Right
+		case 0:
+			// Если мы нашли такой же ключ
+
+			// Если левый узел не равен нулю
+			if curNode.Left != nil {
+				// Сохраняем текущий правый узел
+				right := curNode.Right
+
+				// Обновляем значения текущего нода на те, которые у левого нода
+				curNode.Key = curNode.Left.Key
+				curNode.Value = curNode.Left.Value
+				curNode.Left = curNode.Left.Left
+				curNode.Right = curNode.Left.Right
+
+				// Если у текущего нода было правое поддерево
 				if right != nil {
-					subTree := &Tree{Head: h}
+					// То добавляем содержимое этого правого поднода к текущему обновленному ноду,
+					// происходит переделка всего поддерева
+					subTree := &Tree{Head: curNode}
 					IterOnTree(right, func(n *Node) {
-						subTree.Insert(n.Value)
+						subTree.Insert(n.Key, n.Value)
 					})
 				}
 				t.Size--
 				return true
 			}
 
-			if h.Right != nil {
-				h.Value = h.Right.Value
-				h.Left = h.Right.Left
-				h.Right = h.Right.Right
+			// Если у текущего нода есть правое поддерево, при этом левого нету,
+			// то просто обновляем содержимое текущего нода, на то, что было у правого
+			if curNode.Right != nil {
+				// Обнов
+				curNode.Key = curNode.Right.Key
+				curNode.Value = curNode.Right.Value
+				curNode.Left = curNode.Right.Left
+				curNode.Right = curNode.Right.Right
 
 				t.Size--
 				return true
 			}
 
+			// Если текущего нода нету - значит выходим
 			if parent == nil {
 				t.Head = nil
 				t.Size--
 				return true
 			}
 
+			// Если это это конечные узлы, то просто удаляем их
 			if parent.Left == n {
 				parent.Left = nil
 			} else {
@@ -170,6 +204,7 @@ func (t *Tree) Delete(key int) bool {
 	return false
 }
 
+// Функция добавления к ноду поддерева
 func IterOnTree(n *Node, f func(*Node)) bool {
 	if n == nil {
 		return true

@@ -6,8 +6,8 @@ import (
 )
 
 func TestTree(t *testing.T) {
-	n := NewNode(1)
-	m := NewNode(2)
+	n := NewNode(1, 1)
+	m := NewNode(2, 2)
 
 	// Test compare
 	if n.Compare(m) != -1 || m.Compare(n) != 1 || n.Compare(n) != 0 {
@@ -17,11 +17,11 @@ func TestTree(t *testing.T) {
 
 	tree := NewTree(n)
 
-	tree.Insert(4)
-	tree.Insert(2)
-	tree.Insert(5)
-	tree.Insert(3)
-	tree.Insert(6)
+	tree.Insert(4, 4)
+	tree.Insert(2, 2)
+	tree.Insert(5, 5)
+	tree.Insert(3, 3)
+	tree.Insert(6, 6)
 
 	if tree.Size != 6 {
 		fmt.Println(tree.Size)
